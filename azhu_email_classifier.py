@@ -9,6 +9,7 @@ class AzhuEmailClassifier:
     import re
     import langdetect
     import joblib
+    import langdetect
 
     def __init__(self):
         pass
@@ -116,6 +117,14 @@ class AzhuEmailClassifier:
         result = subject + " " + cleaned_body_string
         return result
 
+    def detect_language(self, raw_string):
+        try:
+            language = langdetect.detect(raw_string)
+        except:
+            print("-- ERROR occurred during language detecion, will default to Hungarian")
+            language = 'hu'
+        return language
+
     def predict(self,raw_string):
         cleaned_string = self.clean_subject_n_body(raw_string)
 
@@ -123,9 +132,19 @@ class AzhuEmailClassifier:
 
         model_filename="azhu_emailclassifier.sav"
         clf = self.joblib.load(model_filename)
+
+        language = self.detect_language(cleaned_string)
+        if language =='de':
+            print("-- German letter received")
+            return 'CC_NEMET_LEVELEK'
+        elif language != 'hu':
+            print("-- Other non-Hungarian letter received")
+            return 'CC_ANGOL_ES_EGYEB_NYELVU_LEVELEK'
+
         prediction = clf.predict([cleaned_string])
         result = str(prediction[0])
         return result
+
 
 
 
